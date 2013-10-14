@@ -2,4 +2,4 @@
 
 require './angelco'
 
-Angelco::get_syndicates()
+p Angelco::get_syndicates()

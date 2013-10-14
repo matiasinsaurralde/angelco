@@ -13,17 +13,23 @@ module Angelco
 
   def self.get_syndicates()
 
-    #raw_html = open("https://angel.co/syndicates?list_name=leaderboard&page=2&list_name=leaderboard").read()
-    raw_html = open("https://angel.co/syndicates?list_name=leaderboard&page=4&list_name=leaderboard").read()
+    syndicates = []
 
-    page = Nokogiri::HTML( raw_html )
+    $n = 69
+    $ps = 100
 
-    if page.css('.item').size > 35
+    while( $ps > 35 ) do
+
+      raw_html = open("https://angel.co/syndicates?list_name=leaderboard&page=#{$n}&list_name=leaderboard").read()
+
+      page = Nokogiri::HTML( raw_html )
+
+      $ps = page.css('.item').size
 
       page.css('.item').each do |item|
         investor_name = item.css('.info').css('.name').css('a').inner_text
         if investor_name.size > 2
-          puts investor_name
+          #puts investor_name
           if item.inner_text.include?("Hasn't created a syndicate")
             typically_invests, backers, backed = -1, -1, -1
           else
@@ -40,12 +46,17 @@ module Angelco
               backed = -1
             end
           end
+
           i = Investor.new( investor_name, typically_invests, backers, backed )
-          p i
+          syndicates.push( i )
         end
       end
 
-     end
+    $n += 1
+
+    end
+
+    return syndicates
 
   end
 end
