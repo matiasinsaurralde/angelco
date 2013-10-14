@@ -13,7 +13,7 @@ module Angelco
 
       @name, @link, @typically_invests, @backers, @backed_by = name, link, typically_invests, backers, backed_by
 
-      @tags, @portfolio, @numbers, @texts = [], [], { :references => 0, :followers => 0, :following => 0 }, {}
+      @tags, @portfolio, @numbers, @texts, @references = [], [], { :references => 0, :followers => 0, :following => 0 }, {}, []
 
     end
 
@@ -59,6 +59,13 @@ module Angelco
         if title.include?("What I'm Looking For")
           @texts.store(:what_im_looking_for, section.css('.content').inner_text )
         end
+      end
+
+      page.css('#profile_references').css('.content').css('.profiles').each do |ref|
+        anchor = ref.css('.right').css('.name').css('a')
+        ref_name = anchor.inner_text
+        ref_link = anchor.attr('href').to_s
+        @references.push( { :name => ref_name, :link => ref_link } )
       end
 
 
