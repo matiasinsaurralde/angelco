@@ -6,8 +6,62 @@ require 'nokogiri'
 module Angelco
 
   class Investor
+
+    attr_accessor :name, :link, :typically_invests, :backers, :backed_by
+
     def initialize( name, link, typically_invests, backers, backed_by )
-      @name, @link, @typically_invests, @backers, @backed_by = name, typically_invests, backers, backed_by
+
+      @name, @link, @typically_invests, @backers, @backed_by = name, link, typically_invests, backers, backed_by
+
+      @tags, @portfolio, @numbers, @texts = [], [], { :references => 0, :followers => 0, :following => 0 }, {}
+
+    end
+
+    def update_info()
+
+      puts self.name
+      puts @link
+      raw_html = open( @link ).read()
+
+      page = Nokogiri::HTML( raw_html )
+
+      page.css('.tags').css('.tag').each do |t|
+        @tags.push( t.css('a').inner_text )
+      end
+
+      page.css('.featured').css('.card').each do |card|
+        anchor = card.css('.name').css('a')
+        card_name = anchor.inner_text
+        card_link = anchor.attr('href').to_s
+        card_role = card.css('.role').inner_text
+
+        card_h = { :name => card_name, :link => card_link, :role => card_role }
+        @portfolio.push( card_h )
+      end
+      puts
+      page.css('.statistic').each do |section|
+        if section.inner_text.include?('References')
+          @numbers[:references] = section.css('strong').inner_text.to_i
+        end
+        if section.inner_text.include?('Followers')
+          @numbers[:followers] = section.css('strong').inner_text.to_i
+        end
+        if section.inner_text.include?('Following')
+          @numbers[:following] = section.css('strong').inner_text.to_i
+        end
+      end
+
+      page.css('.profile_section').each do |section|
+        title = section.css('.section_header').inner_text
+        if title.include?("What I Do")
+          @texts.store(:what_i_do, section.css('.content').inner_text )
+        end
+        if title.include?("What I'm Looking For")
+          @texts.store(:what_im_looking_for, section.css('.content').inner_text )
+        end
+      end
+
+
     end
   end
 
@@ -15,7 +69,7 @@ module Angelco
 
     syndicates = []
 
-    $n = 69
+    $n = 1
     $ps = 100
 
     while( $ps > 35 ) do
@@ -49,7 +103,9 @@ module Angelco
           end
 
           i = Investor.new( investor_name, investor_link, typically_invests, backers, backed )
+          i.update_info()
           syndicates.push( i )
+
         end
       end
 
