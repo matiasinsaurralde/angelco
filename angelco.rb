@@ -6,8 +6,8 @@ require 'nokogiri'
 module Angelco
 
   class Investor
-    def initialize( name, typically_invests, backers, backed_by )
-      @name, @typically_invests, @backers, @backed_by = name, typically_invests, backers, backed_by
+    def initialize( name, link, typically_invests, backers, backed_by )
+      @name, @link, @typically_invests, @backers, @backed_by = name, typically_invests, backers, backed_by
     end
   end
 
@@ -27,9 +27,10 @@ module Angelco
       $ps = page.css('.item').size
 
       page.css('.item').each do |item|
-        investor_name = item.css('.info').css('.name').css('a').inner_text
+        investor_anchor = item.css('.info').css('.name').css('a')
+        investor_name = investor_anchor.inner_text
         if investor_name.size > 2
-          #puts investor_name
+          investor_link = investor_anchor.attr('href').to_s
           if item.inner_text.include?("Hasn't created a syndicate")
             typically_invests, backers, backed = -1, -1, -1
           else
@@ -47,7 +48,7 @@ module Angelco
             end
           end
 
-          i = Investor.new( investor_name, typically_invests, backers, backed )
+          i = Investor.new( investor_name, investor_link, typically_invests, backers, backed )
           syndicates.push( i )
         end
       end
