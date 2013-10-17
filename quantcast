@@ -1,0 +1,2 @@
+$(document).on('mousemove', function() { splits = [$('#tt-date')[0].innerText, $('.tt-metric-container')[1].innerText]; window.data.push( splits );  } );
+$(document).on('mousemove', function() { window.data[ $('#tt-date')[0].innerText ] =  $('.tt-metric-container')[1].innerText;  } );
