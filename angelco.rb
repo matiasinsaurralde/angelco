@@ -17,16 +17,26 @@ module Angelco
 
     end
 
+    def to_csv()
+      ln, fields = "", [ @name, @link, @typically_invests, @backers, @backed_by, @tags.join('|').gsub(',', ''), @numbers.values.join(',') ]
+      fields.each do |k|
+        ln += k.to_s
+        ln += "," if k != fields.last
+      end
+      ln
+    end
+
     def update_info()
 
-      puts self.name
-      puts @link
       raw_html = open( @link ).read()
 
       page = Nokogiri::HTML( raw_html )
 
+      #page.css('.tags').css('.tag').each do |t|
+      #  @tags.push( t.css('a').inner_text )
+      #end
       page.css('.tags').css('.tag').each do |t|
-        @tags.push( t.css('a').inner_text )
+        @tags.push( t.inner_text )
       end
 
       page.css('.featured').css('.card').each do |card|
@@ -38,7 +48,6 @@ module Angelco
         card_h = { :name => card_name, :link => card_link, :role => card_role }
         @portfolio.push( card_h )
       end
-      puts
       page.css('.statistic').each do |section|
         if section.inner_text.include?('References')
           @numbers[:references] = section.css('strong').inner_text.to_i
@@ -111,6 +120,7 @@ module Angelco
 
           i = Investor.new( investor_name, investor_link, typically_invests, backers, backed )
           i.update_info()
+p i.to_csv
           syndicates.push( i )
 
         end
