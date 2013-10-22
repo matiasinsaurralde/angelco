@@ -20,7 +20,12 @@ module Angelco
 
     def to_csv()
       ln, fields = "", [ @name, @link, @typically_invests, @backers, @backed_by, @tags.join('|').gsub(',', ''), @numbers.values.join(',') ]
-      #pp @portfolio.map { |p| p.values.join("|") }
+      portfolio = @portfolio.map { |p| p.values.join(",") }
+      portfolio.each do |p|
+        open(File.join($DIR, 'portfolio.txt'), 'a') do |f|
+          f.puts "#{@name},#{@link},#{p}"
+        end
+      end
       fields.each do |k|
         ln += k.to_s
         ln += "," if k != fields.last
@@ -65,10 +70,16 @@ module Angelco
       page.css('.profile_section').each do |section|
         title = section.css('.section_header').inner_text
         if title.include?("What I Do")
-          @texts.store(:what_i_do, section.css('.content').inner_text )
+          @texts.store(:what_i_do, section.css('.content').inner_text.gsub("\n", " ") )
         end
         if title.include?("What I'm Looking For")
-          @texts.store(:what_im_looking_for, section.css('.content').inner_text )
+          @texts.store(:what_im_looking_for, section.css('.content').inner_text.gsub("\n", " ") )
+        end
+      end
+
+      open(File.join($DIR, 'texts.txt'), 'a') do |f|
+        @texts.each do |label, text|
+          f.puts( "#{@name},#{@link},#{label.to_s},\"#{text}\"" )
         end
       end
 
@@ -77,6 +88,12 @@ module Angelco
         ref_name = anchor.inner_text
         ref_link = anchor.attr('href').to_s
         @references.push( { :name => ref_name, :link => ref_link } )
+      end
+
+      open(File.join($DIR, 'references.txt'), 'a') do |f|
+        @references.each do |ref|
+          f.puts "#{@name},#{@link},#{ref[:name]},#{ref[:link]}"
+        end
       end
 
 
@@ -122,7 +139,9 @@ module Angelco
 
           i = Investor.new( investor_name, investor_link, typically_invests, backers, backed )
           i.update_info()
-p i.to_csv
+          open(File.join($DIR, 'syndicates.txt'), 'a') do |f|
+            f.puts( i.to_csv )
+          end
           syndicates.push( i )
 
         end
