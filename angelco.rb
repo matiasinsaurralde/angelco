@@ -2,6 +2,7 @@
 
 require 'open-uri'
 require 'nokogiri'
+require 'pp'
 
 module Angelco
 
@@ -19,6 +20,7 @@ module Angelco
 
     def to_csv()
       ln, fields = "", [ @name, @link, @typically_invests, @backers, @backed_by, @tags.join('|').gsub(',', ''), @numbers.values.join(',') ]
+      #pp @portfolio.map { |p| p.values.join("|") }
       fields.each do |k|
         ln += k.to_s
         ln += "," if k != fields.last
